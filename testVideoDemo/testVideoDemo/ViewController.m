@@ -15,6 +15,7 @@
 
 @property (nonatomic,strong) TKVideoPlanet * planet;
 @property (nonatomic,strong) NSString * roomId;
+@property (nonatomic,strong) NSString * token;
 
 @property (weak, nonatomic) IBOutlet UIView *localView;
 @property (weak, nonatomic) IBOutlet UIView *remoteView;
@@ -38,6 +39,11 @@
     self.connectTipLabel.hidden = YES;
     
     [self startCapture];
+    @weakify(self);
+    [self.planet gainAppTokenReadyCallback:^(NSString *token, NSError *error) {
+        @strongify(self);
+        self.token = token;
+    }];
 }
 
 
@@ -78,23 +84,23 @@
 {
     self.activityView.hidden = NO;
     self.connectTipLabel.hidden = NO;
+    self.connectTipLabel.text = @"";
     @weakify(self);
     [self.planet connectRoomId:self.roomId
                          state:^(TKVideoConnectState state, NSError *error) {
                              @strongify(self);
                              BOOL needHiddenBtn;
                              BOOL needHiddenLoadingView;
-                             if (state == TKVideoPalnetConnected) {
+                             if (state == TKVideoPlanetConnected) {
                                  needHiddenBtn = YES;
                                  needHiddenLoadingView = YES;
                                  self.connectTipLabel.text = @"connected";
                              }
-                             else if(state == TKVideoPalnetDisconnected){
+                             else if(state == TKVideoPlanetDisconnected){
                                  needHiddenBtn = NO;
                                  needHiddenLoadingView = YES;
-                                 self.connectTipLabel.text = @"disconnect";
                              }
-                             else if(state == TKVideoPalnetConnecting){
+                             else if(state == TKVideoPlanetConnecting){
                                  needHiddenBtn = YES;
                                  needHiddenLoadingView = NO;
                                  self.connectTipLabel.text = [NSString stringWithFormat:@"connect room:%@",self.roomId];
@@ -103,6 +109,7 @@
                              self.connectTipLabel.hidden = needHiddenLoadingView;
                              self.leaveBtn.hidden = !needHiddenBtn;
                              self.connectBtn.hidden = needHiddenBtn;
+                             [self handleErrorMessge:error];
                          }];
     
     UIView * remotePreview = self.planet.cameraPreviewController.getRemoteCameraPreview;
@@ -114,6 +121,14 @@
     }
 }
 
+- (void)handleErrorMessge:(NSError*)error
+{
+    if (error) {
+        self.connectTipLabel.text = error.localizedDescription;
+        self.connectTipLabel.hidden = NO;
+    }
+}
+
 - (void)startCapture
 {
     UIView * preview = [self.planet.cameraPreviewController getLocalCameraPreview];
@@ -122,8 +137,8 @@
     [preview mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(self.localView);
     }];
-    
 }
+
 
 - (BOOL)prefersStatusBarHidden
 {

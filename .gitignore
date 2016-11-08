@@ -66,3 +66,7 @@ testVideoDemo/.DS_Store
 testVideoDemo/sdk/.DS_Store
 
 testVideoDemo/sdk/include/.DS_Store
+
+.DS_Store
+
+testVideoDemo/Podfile.lock

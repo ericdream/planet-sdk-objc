@@ -1,11 +1,12 @@
 # Uncomment this line to define a global platform for your project
 source 'https://github.com/CocoaPods/Specs.git'
+source 'https://github.com/animeng/spec.git'
 
 platform :ios, '8.0'
 
 target 'testVideoDemo' do
     use_frameworks!
-    pod 'TKVideoPlanet',:path => './'      # 指定路径
+    pod 'TKVideoPlanet','~> 0.0.1'
 end
 
 
